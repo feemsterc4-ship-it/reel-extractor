@@ -1,0 +1,6 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+yt-dlp>=2025.1.15
+faster-whisper>=1.0.0
+pytesseract>=0.3.10
+Pillow>=10.0

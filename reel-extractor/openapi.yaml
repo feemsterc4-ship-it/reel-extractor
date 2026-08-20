@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Instagram Reel Knowledge Extractor
+  description: >-
+    Extracts all available knowledge from an Instagram reel link: caption,
+    hashtags, author, engagement, full audio transcript, and on-screen text.
+  version: 1.0.0
+servers:
+  - url: https://YOUR-DEPLOYED-URL-HERE
+paths:
+  /extract:
+    post:
+      operationId: extractReel
+      summary: >-
+        Extract transcript, on-screen text, caption and metadata from an
+        Instagram reel URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtractRequest'
+      responses:
+        '200':
+          description: Extracted reel content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractResponse'
+        '401':
+          description: Invalid or missing API key
+        '422':
+          description: Not a valid Instagram reel URL
+        '502':
+          description: Instagram refused the request (login wall or rate limit)
+components:
+  schemas:
+    ExtractRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          description: Instagram reel/post URL, e.g. https://www.instagram.com/reel/ABC123/
+        include_ocr:
+          type: boolean
+          default: true
+          description: Also OCR on-screen text from sampled video frames (slower).
+        language:
+          type: string
+          nullable: true
+          description: Optional ISO language hint for transcription, e.g. 'en', 'de'.
+    ExtractResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        shortcode:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        caption:
+          type: string
+          nullable: true
+        hashtags:
+          type: array
+          items: {type: string}
+        mentions:
+          type: array
+          items: {type: string}
+        author:
+          type: object
+          properties:
+            username: {type: string, nullable: true}
+            full_name: {type: string, nullable: true}
+            profile_url: {type: string, nullable: true}
+        engagement:
+          type: object
+          properties:
+            views: {type: integer, nullable: true}
+            likes: {type: integer, nullable: true}
+            comments: {type: integer, nullable: true}
+        upload_date:
+          type: string
+          nullable: true
+        duration_seconds:
+          type: number
+          nullable: true
+        detected_language:
+          type: string
+          nullable: true
+        transcript:
+          type: string
+          nullable: true
+          description: Full spoken-word transcript of the reel's audio.
+        transcript_segments:
+          type: array
+          items:
+            type: object
+            properties:
+              start: {type: number}
+              end: {type: number}
+              text: {type: string}
+        on_screen_text:
+          type: array
+          items: {type: string}
+          description: Deduplicated text overlays detected in the video frames (OCR).
+        notes:
+          type: array
+          items: {type: string}
+          description: Non-fatal warnings.
